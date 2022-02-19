@@ -5,8 +5,9 @@ from src.game_constants import GameConstants as GC
 
 class MyPlayer(Player):
     def __init__(self):
-        self.map_rows = 0
-        self.map_cols = 0
+        self.map_rows = None
+        self.map_cols = None
+        self.cell_metric = None
         pass
 
     def play_turn(self, turn_num, map, player_info):
@@ -14,7 +15,8 @@ class MyPlayer(Player):
         self.map_cols = len(map[0])
 
         my_structs = list(set(self.parse_map(map, player_info)))
-        pop_cells = self.calculate_score(map, player_info)
+        if self.cell_metric is None:
+            self.calculate_metric(map, player_info)
         # randomly bid 1 or 2
         self.set_bid(random.randint(1, 2))
         return
@@ -29,24 +31,19 @@ class MyPlayer(Player):
         return my_structs
 
     ''' Find the "score" at this map state '''
-    def calculate_score(self, map, player_info):
-        pop_served = 0
+    def calculate_metric(self, map, player_info):
+        self.cell_metric = []
         # Iterate over all of our structures
         for x in range(self.map_rows):
             for y in range(self.map_cols):
                 st = map[x][y].structure
-                if st is not None and st.team == player_info.team:
-                    my_structs.append(map[x][y])
-                # Move in a radius of 2
-                coverage = [(1, 0), (-1, 0), (0, 1), (0, -1),(2, 0), (-2, 0), 
-                        (0, 2), (0, -2),(1, 1), (1, -1), (-1, 1), (-1, -1)]
+                if st is None:
+                    # Move in a radius of 2
+                    coverage = [(1, 0), (-1, 0), (0, 1), (0, -1),(2, 0), (-2, 0), 
+                            (0, 2), (0, -2),(1, 1), (1, -1), (-1, 1), (-1, -1)]
 
-                for dx, dy in coverage:
-                    (nx, ny) = (st.x + dx, st.y + dy)
-                    if nx >= self.map_rows or ny >= self.map_cols:
-                        continue
-                    pop_served += map[nx][ny].population
-
-        return pop_served
-
+                    for dx, dy in coverage:
+                        (nx, ny) = (x + dx, y + dy)
+                        if nx < self.map_rows and ny < self.map_cols:
+                            self.cell_metric.append(map[nx][ny])
 
