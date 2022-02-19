@@ -29,8 +29,8 @@ class MyPlayer(Player):
 
         arg = scores.index(max(scores))
 
-        tx = moves[arg][0].x
-        ty = moves[arg][0].y
+        tx = valid_moves[arg][0].x
+        ty = valid_moves[arg][0].y
         build_type = valid_moves[arg][1]
         self.build(build_type, tx, ty)
         return 
@@ -50,7 +50,7 @@ class MyPlayer(Player):
         my_structs = []
         valid_moves = []
         for x in range(self.map_rows):
-            for y in range(self.MAP_HEIGHT):
+            for y in range(self.map_cols):
                 st = map[x][y].structure
                 if st is not None and st.team == player_info.team:
                     my_structs.append(map[x][y])
@@ -78,7 +78,7 @@ class MyPlayer(Player):
     ''' Find the "score" at this map state '''
     def calculate_score(self, map, my_structs):
         # Iterate over all of our structures
-        for st in my_struct:
+        for st in my_structs:
             # If structure is a tower
             if st.type == StructureType.TOWER:
                 pop_served = 0
