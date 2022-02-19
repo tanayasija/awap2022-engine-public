@@ -2,7 +2,7 @@ from src.player import *
 from src.structure import *
 from src.game_constants import GameConstants as GC
 
-class Hexagon(Player):
+class MyPlayer(Player):
     def __init__(self):
         self.map_rows = 0
         self.map_cols = 0
@@ -16,16 +16,16 @@ class Hexagon(Player):
         my_structs = set(my_structs)
         valid_moves = set(valid_moves)
 
-        self.evaluate(my_structs, valid_moves, player_info)
+        self.evaluate(map, my_structs, valid_moves, player_info)
         return
 
 
 
-    def evaluate(self, my_structs, valid_moves, player_info):
+    def evaluate(self, map, my_structs, valid_moves, player_info):
         scores = []
         for move in valid_moves:
-            new_map = updated_map(move)
-            scores.append(calculate_score(new_map, my_structs, player_info.team))
+            new_map = updated_map(map, move, player_info.team)
+            scores.append(calculate_score(new_map, my_structs)
 
         arg = scores.index(max(scores))
 
@@ -91,6 +91,6 @@ class Hexagon(Player):
                     (nx, ny) = (st.x + dx, st.y + dy)
                     pop_served += map[nx][ny].population
 
-    return pop_served
+        return pop_served
 
 
