@@ -1,4 +1,5 @@
 import random
+import heapq
 from src.player import *
 from src.structure import *
 from src.game_constants import GameConstants as GC
@@ -8,6 +9,7 @@ class MyPlayer(Player):
         self.map_rows = None
         self.map_cols = None
         self.cell_metric = None
+        self.weight = 0.5
         pass
 
     def play_turn(self, turn_num, map, player_info):
@@ -15,10 +17,41 @@ class MyPlayer(Player):
         self.map_cols = len(map[0])
 
         my_structs = list(set(self.parse_map(map, player_info)))
-        if self.cell_metric is None:
-            self.calculate_metric(map, player_info)
+        self.calculate_metric(map, player_info)
         # randomly bid 1 or 2
         self.set_bid(random.randint(1, 2))
+        return
+
+    def shortest_dist(self, my_structs, map, player_info):
+        dist_min = self.map_cols**2 + self.map_rows**2 + 1
+        cell_min = None
+        for struct in my_structs:
+            for cell in self.cell_metric:
+                distance = (struct.x - cell.x)**2 + (struct.y - cell.y)**2
+                if distance < dist_min:
+                    dist_min = distance
+                    cell_min = cell
+        min_parent = None
+        min_cost = self.map_cols**2 + self.map_rows**2 + 10*self.map_cols*self.map_rows
+        for struct in my_structs:
+            node_dict = {struct: 0}
+            parent = {struct : None}
+            node = None
+            while len(node_dict) > 0 or (node.x == cell_min.x and node.y == cell_min.y):
+                node = min(node_dict)
+                for dx,dy in [(1,0),(-1,0),(0,1),(0,-1)]:
+                    nx, ny = (struct.x + dx, struct.y + dy)
+                    if nx >= 0 and nx < self.map_rows and ny >= 0 and ny <= self.map_cols:
+                        cur_node = map[nx][ny]
+                        distance = node_dict[node] + map[nx][ny].passability + ((cell_min.x - cur_node.x)**2 + (cell_min.y - cur_node.y)**2)*self.weight
+                        if map[nx][ny] in node_dict and node_dict[cur_node] > distance:
+                            node_dict[cur_node]= distance
+                            parent[cur_node]= node
+                        elif map[nx][ny] not in node_dict:
+                            node_dict[cur_node] = distance
+                            parent[cur_node]= node
+                node_dict.pop(node)
+            if node.x < 
         return
 
     def parse_map(self, map, player_info):
@@ -42,8 +75,10 @@ class MyPlayer(Player):
                     coverage = [(1, 0), (-1, 0), (0, 1), (0, -1),(2, 0), (-2, 0), 
                             (0, 2), (0, -2),(1, 1), (1, -1), (-1, 1), (-1, -1)]
 
+                    pop_served = 0
                     for dx, dy in coverage:
                         (nx, ny) = (x + dx, y + dy)
-                        if nx < self.map_rows and ny < self.map_cols:
-                            self.cell_metric.append(map[nx][ny])
-
+                        if nx >= 0 and nx < self.map_rows and ny >= 0 and ny < self.map_cols:
+                            pop_served += map[nx][ny].population
+                    if pop_served > 0:
+                        self.cell_metric.append((map[x][y], pop_served))
