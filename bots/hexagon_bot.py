@@ -18,7 +18,16 @@ class Hexagon(Player):
         return
 
     def evaluate(self, moves):
-        
+        for move in moves:
+            new_map = updated_map(move)
+            scores.append(calculate_score(new_map))
+
+        arg = scores.index(max(scores))
+
+        tx = moves[arg][0].x
+        ty = moves[arg][0].y
+        build_type = moves[arg][1]
+        self.build(build_type, tx, ty)
         return 
 
     def parse_map(self, map, player_info):
@@ -47,3 +56,23 @@ class Hexagon(Player):
                     # attempt to build
                     valid_moves.append((map[nx][ny], StructureType.ROAD))          
         return
+
+    ''' Find the "score" at this map state '''
+    def calculate_score(self, map, my_structs):
+        # Iterate over all of our structures
+        for st in my_struct:
+            # If structure is a tower
+            if st.type == StructureType.TOWER:
+                pop_served = 0
+                
+                # Move in a radius of 2
+                coverage = [(1, 0), (-1, 0), (0, 1), (0, -1),(2, 0), (-2, 0), 
+                        (0, 2), (0, -2),(1, 1), (1, -1), (-1, 1), (-1, -1)]
+
+                for dx, dy in coverage:
+                    (nx, ny) = (st.x + dx, st.y + dy)
+                    pop_served += map[nx][ny].population
+
+    return pop_served
+
+
