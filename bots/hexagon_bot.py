@@ -12,14 +12,23 @@ class Hexagon(Player):
         self.map_rows = len(map)
         self.map_cols = len(map[0])
 
+        valid_moves = set(self.parse_map(map, player_info))   
+        self.evaluate(valid_moves)
+    
+        return
+
+    def evaluate(self, moves):
+        
+        return 
+
+    def parse_map(self, map, player_info):
         valid_moves = []
         for x in range(self.map_rows):
             for y in range(self.MAP_HEIGHT):
                 st = map[x][y].structure
                 if st is not None and st.team == player_info.team:
-                    self.build_valid_moves(map, player_info, st, valid_moves)     
-
-        return
+                    self.build_valid_moves(map, player_info, st, valid_moves)
+        return valid_moves
 
     def build_valid_moves(self, map, player_info, tile, valid_moves):
         for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
