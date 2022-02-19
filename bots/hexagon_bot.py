@@ -13,8 +13,8 @@ class MyPlayer(Player):
         self.map_cols = len(map[0])
 
         my_structs, valid_moves = self.parse_map(map, player_info)   
-        my_structs = set(my_structs)
-        valid_moves = set(valid_moves)
+        my_structs = list(set(my_structs))
+        valid_moves = list(set(valid_moves))
 
         self.evaluate(map, my_structs, valid_moves, player_info)
         return
@@ -23,11 +23,13 @@ class MyPlayer(Player):
 
     def evaluate(self, map, my_structs, valid_moves, player_info):
         scores = []
+        
         for move in valid_moves:
-            new_map = updated_map(map, move, player_info.team)
-            scores.append(calculate_score(new_map, my_structs)
+            new_map = self.updated_map(map, move, player_info.team)
+            scores.append(self.calculate_score(new_map, my_structs))
 
-        arg = scores.index(max(scores))
+        max_score = max(scores)
+        arg = scores.index(max_score)
 
         tx = valid_moves[arg][0].x
         ty = valid_moves[arg][0].y
@@ -41,8 +43,8 @@ class MyPlayer(Player):
 
         new_map = map.copy()
         
-        new_map[x, y].type = move[1]
-        new_map[x, y].team = player_team 
+        new_map[x][y].type = move[1]
+        new_map[x][y].team = player_team 
 
         return new_map
 
@@ -77,18 +79,19 @@ class MyPlayer(Player):
 
     ''' Find the "score" at this map state '''
     def calculate_score(self, map, my_structs):
+        pop_served = 0
         # Iterate over all of our structures
         for st in my_structs:
             # If structure is a tower
-            if st.type == StructureType.TOWER:
-                pop_served = 0
-                
+            if st.structure.type == StructureType.TOWER:
                 # Move in a radius of 2
                 coverage = [(1, 0), (-1, 0), (0, 1), (0, -1),(2, 0), (-2, 0), 
                         (0, 2), (0, -2),(1, 1), (1, -1), (-1, 1), (-1, -1)]
 
                 for dx, dy in coverage:
                     (nx, ny) = (st.x + dx, st.y + dy)
+                    if nx >= self.map_rows or ny >= self.map_cols:
+                        continue
                     pop_served += map[nx][ny].population
 
         return pop_served
