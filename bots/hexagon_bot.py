@@ -12,32 +12,50 @@ class Hexagon(Player):
         self.map_rows = len(map)
         self.map_cols = len(map[0])
 
-        valid_moves = set(self.parse_map(map, player_info))   
-        self.evaluate(valid_moves)
-    
+        my_structs, valid_moves = self.parse_map(map, player_info)   
+        my_structs = set(my_structs)
+        valid_moves = set(valid_moves)
+
+        self.evaluate(my_structs, valid_moves, player_info)
         return
 
-    def evaluate(self, moves):
-        for move in moves:
+
+
+    def evaluate(self, my_structs, valid_moves, player_info):
+        scores = []
+        for move in valid_moves:
             new_map = updated_map(move)
-            scores.append(calculate_score(new_map))
+            scores.append(calculate_score(new_map, my_structs, player_info.team))
 
         arg = scores.index(max(scores))
 
         tx = moves[arg][0].x
         ty = moves[arg][0].y
-        build_type = moves[arg][1]
+        build_type = valid_moves[arg][1]
         self.build(build_type, tx, ty)
         return 
 
+    def updated_map(self, map, move, player_team):
+        x = move[0].x
+        y = move[0].y
+
+        new_map = map.copy()
+        
+        new_map[x, y].type = move[1]
+        new_map[x, y].team = player_team 
+
+        return new_map
+
     def parse_map(self, map, player_info):
+        my_structs = []
         valid_moves = []
         for x in range(self.map_rows):
             for y in range(self.MAP_HEIGHT):
                 st = map[x][y].structure
                 if st is not None and st.team == player_info.team:
+                    my_structs.append(map[x][y])
                     self.build_valid_moves(map, player_info, st, valid_moves)
-        return valid_moves
+        return my_structs, valid_moves
 
     def build_valid_moves(self, map, player_info, tile, valid_moves):
         for dx, dy in [(1, 0), (-1, 0), (0, 1), (0, -1)]:
