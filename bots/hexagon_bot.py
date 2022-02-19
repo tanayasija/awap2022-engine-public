@@ -33,6 +33,9 @@ class MyPlayer(Player):
         max_score = max(scores)
         arg = scores.index(max_score)
 
+        if max_score == 0:
+            arg = random.randint(0, len(valid_moves) - 1)
+
         tx = valid_moves[arg][0].x
         ty = valid_moves[arg][0].y
         build_type = valid_moves[arg][1]
